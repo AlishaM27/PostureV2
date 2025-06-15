@@ -104,14 +104,15 @@
         <TextView
             android:id="@+id/poseResultText"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="50dp"
             android:layout_alignStart="@id/poseResults"
             android:layout_alignTop="@id/poseResults"
             android:layout_alignEnd="@id/poseResults"
             android:layout_alignBottom="@id/poseResults"
             android:layout_centerInParent="true"
             android:paddingTop="5dp"
-            android:text="Results will show here"
+            android:paddingRight="150dp"
+            android:text="Result will be shown here..."
             android:textAlignment="center" />
 
         <androidx.fragment.app.FragmentContainerView
@@ -125,6 +126,17 @@
             app:defaultNavHost="true"
             app:navGraph="@navigation/nav_graph"
             tools:context=".MainActivity" />
+
+        <androidx.appcompat.widget.AppCompatSpinner
+            android:id="@+id/posture_exercise"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@id/poseResults"
+            android:layout_alignRight="@id/poseResultText"
+            android:layout_marginTop="0dp"
+            android:paddingTop="5dp"
+            android:spinnerMode="dropdown"
+            android:entries="@array/exercises_for_posture" />
 
     </RelativeLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

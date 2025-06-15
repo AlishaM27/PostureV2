@@ -1,13 +1,11 @@
 package com.example.postureV2;
 
 import android.os.Bundle;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
-/*import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;*/
 
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
@@ -18,6 +16,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
     private MainViewModel viewModel;
+    private TextView resultText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,29 +28,16 @@ public class MainActivity extends AppCompatActivity {
         // Initialize ViewModel
         viewModel = new ViewModelProvider(this).get(MainViewModel.class);
 
+        //Added by FitHit Developers
+        resultText = findViewById(R.id.poseResultText);
+        viewModel.getPoseResults().observe(this, newText -> {
+            resultText.setText(newText);
+        });
+
         // Get the NavHostFragment and NavController
         NavHostFragment navHostFragment = (NavHostFragment)
                 getSupportFragmentManager().findFragmentById(R.id.fragment_container);
-        /*NavController navController = navHostFragment.getNavController();
 
-        // Set up bottom navigation
-        BottomNavigationView bottomNavigationView = findViewById(R.id.navigation);
-        NavigationUI.setupWithNavController(bottomNavigationView, navController);
-
-        // Ignore reselection
-        bottomNavigationView.setOnNavigationItemReselectedListener(item -> {
-            // No action taken on reselection
-        });
-
-        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                finish(); // Perform your custom back press action
-            }
-        });
-
-    }
-}*/
         if (navHostFragment != null) {
             NavController navController = navHostFragment.getNavController();
 

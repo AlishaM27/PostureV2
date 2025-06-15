@@ -394,6 +394,9 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
                 // Force a redraw
                 fragmentCameraBinding.overlay.invalidate()
+
+                //display Results
+                viewModel.poseResult(resultBundle.results.get(0))
             }
         }
     }

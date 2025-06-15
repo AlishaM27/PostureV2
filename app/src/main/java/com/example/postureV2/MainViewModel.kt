@@ -15,14 +15,21 @@
  */
 package com.example.postureV2
 
+import android.nfc.Tag
+import android.util.Log
+import android.widget.TextView
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
 
 /**
  *  This ViewModel is used to store pose landmarker helper settings
  */
 class MainViewModel : ViewModel() {
 
-    private var _model = PoseLandmarkerHelper.MODEL_POSE_LANDMARKER_FULL
+    private var results: PoseLandmarkerResult? = null
+    private var _model = PoseLandmarkerHelper.MODEL_POSE_LANDMARKER_LITE
     private var _delegate: Int = PoseLandmarkerHelper.DELEGATE_CPU
     private var _minPoseDetectionConfidence: Float =
         PoseLandmarkerHelper.DEFAULT_POSE_DETECTION_CONFIDENCE
@@ -30,6 +37,10 @@ class MainViewModel : ViewModel() {
         .DEFAULT_POSE_TRACKING_CONFIDENCE
     private var _minPosePresenceConfidence: Float = PoseLandmarkerHelper
         .DEFAULT_POSE_PRESENCE_CONFIDENCE
+
+    //Added by FitHit Developers
+    private val _poseResults = MutableLiveData<String>("Waiting for data...")
+    val poseResults: LiveData<String> = _poseResults
 
     val currentDelegate: Int get() = _delegate
     val currentModel: Int get() = _model
@@ -63,7 +74,12 @@ class MainViewModel : ViewModel() {
         _model = model
     }
 
-    fun displayResults() {
-
+    //added by FitHit Developers
+    fun poseResult(poseResult: PoseLandmarkerResult) {
+        val landmark = poseResult.landmarks()?.firstOrNull()?.getOrNull(11)
+        _poseResults.value = if (landmark != null)
+            "X: ${landmark.x()}, Y: ${landmark.y()}"
+        else
+            "No landmarks detected"
     }
 }
