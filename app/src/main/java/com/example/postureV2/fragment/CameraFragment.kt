@@ -396,7 +396,9 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                 fragmentCameraBinding.overlay.invalidate()
 
                 //display Results
-                viewModel.poseResult(resultBundle.results.get(0))
+                //viewModel.poseResult(resultBundle.results.get(0))
+                //viewModel.angleReading(resultBundle.results.get(0))
+                viewModel.setAngleReadings(resultBundle.results.get(0))
             }
         }
     }

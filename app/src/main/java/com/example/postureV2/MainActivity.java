@@ -12,7 +12,9 @@ import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 
+//import com.example.postureV2.fragment.ResultsFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import android.content.Intent;
 
 public class MainActivity extends AppCompatActivity {
     private MainViewModel viewModel;
@@ -29,10 +31,41 @@ public class MainActivity extends AppCompatActivity {
         viewModel = new ViewModelProvider(this).get(MainViewModel.class);
 
         //Added by FitHit Developers
-        resultText = findViewById(R.id.poseResultText);
-        viewModel.getPoseResults().observe(this, newText -> {
-            resultText.setText(newText);
+        viewModel.setExercise(this, "Jumping Jacks");
+
+        //button listener
+        findViewById(R.id.btnComplete).setOnClickListener(v -> {
+            viewModel.completeExercise();
         });
+        //observe exercise report
+//        viewModel.getExerciseReport().observe(this, report -> {
+//            if (report != null && !report.isEmpty()){
+//                showResultsFragment(report);
+//            }
+//        });
+
+        viewModel.getExerciseReport().observe(this, report ->{
+            if (report != null && !report.isEmpty()){
+                //Start ResultsActivity with the report
+                Intent intent = new Intent(MainActivity.this, ResultsActivity.class);
+                intent.putExtra("REPORT", report);
+                startActivity(intent);
+            }
+        });
+
+        resultText = findViewById(R.id.poseResultText);
+//        viewModel.getAngleRead().observe(this, newText -> {
+//            //resultText.setText(newText);
+//        });
+
+        //posture correction section
+//        viewModel.getPostureFeedback().observe(this, feedback -> {
+//            resultText.setText(feedback);
+//        });
+//
+//        viewModel.getExerciseReport().observe(this, report->{
+//            resultText.setText(report);
+//        });
 
         // Get the NavHostFragment and NavController
         NavHostFragment navHostFragment = (NavHostFragment)
