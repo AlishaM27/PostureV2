@@ -22,6 +22,6 @@
 
     <item
         android:id="@id/gallery_fragment"
-        android:icon="@drawable/ic_baseline_photo_library_24"
-        android:title="@string/menu_gallery" />
+        android:icon="@drawable/ic_baseline_camera_reverse"
+        android:title="@string/menu_reverseCamera" />
 </menu>

@@ -47,6 +47,16 @@ class MainViewModel : ViewModel() {
     val postureFeedback: LiveData<String> = _postureFeedback
     private val _exerciseReport = MutableLiveData<String>()
     val exerciseReport: LiveData<String> = _exerciseReport
+    private val _exercisePercentage = MutableLiveData<String>()
+    val exercisePercentage: LiveData<String> = _exercisePercentage
+
+    private val _currentExercise = MutableLiveData<String>()
+    val currentExercise: LiveData<String> get() = _currentExercise
+
+    private val _restartExercise = MutableLiveData<Boolean>()
+    val restartExercise: LiveData<Boolean> get() = _restartExercise
+    private val _isExerciseCompleted = MutableLiveData(false)
+    private val _isSwitchingExercises = MutableLiveData(false)
 
     private var referenceFrames: List<Map<String, Float>> = emptyList()
     private val performanceHistory = mutableListOf<FrameMatchResult>()
@@ -87,6 +97,19 @@ class MainViewModel : ViewModel() {
     }
 
     //added by FitHit Developers
+    fun setExercise(exercise: String) {
+        if (_currentExercise.value != exercise) {
+            _currentExercise.value = exercise
+            triggerRestart()
+        }
+    }
+
+    fun triggerRestart() {
+        _restartExercise.value = true
+        // Reset the trigger so it can be used again
+        _restartExercise.value = false
+    }
+
     fun poseResult(poseResult: PoseLandmarkerResult) {
         val landmark = poseResult.landmarks()?.firstOrNull()?.getOrNull(11)
         _poseResults.value = if (landmark != null)
@@ -104,30 +127,20 @@ class MainViewModel : ViewModel() {
             "No Angles detected"
     }
 
-    fun processFrameOld(result:PoseLandmarkerResult, context: Context, targetExercise: String, currentFrame: Map<String, Float>) {
-        //getting readings from the dataset
-        val datasetReadings = loadExerciseData(context, targetExercise)
-
-        //then get the readings from the google mediapipe
-        val appReadings = calculateAngles(result)
-
-        //Comparison
-        //went to write the findBestMatchInContext, brb
-
-        //Take the difference between both left and right sides, save it in a list
-        //transverse the list
-            //in the list, anything higher 0.5 is Good, and so on
-            //add the labels into a new list, this one will be for printing
-        //return the list
-    }
-
     //from further onwards is the code for posture correction
     fun setAngleReadings(result: PoseLandmarkerResult){
         processFrame(calculateAngles(result))
     }
 
     fun setExercise(context: Context, exerciseName: String) {
+        _isSwitchingExercises.value = true
         referenceFrames = loadExerciseData(context, exerciseName)
+
+        // Reset completion state
+        _isExerciseCompleted.value = false
+
+        // Clear switching flag after setup
+        _isSwitchingExercises.value = false
     }
 
     private fun processFrame(jointAngles: Map<String, Float>){
@@ -150,9 +163,13 @@ class MainViewModel : ViewModel() {
     }
 
     fun completeExercise() {
-        val report = generateExerciseReport(performanceHistory, frameThreshold, minSequenceLength)
-        val reportText = buildReportString(report)
-        _exerciseReport.postValue(reportText)
+        // Only generate report if not switching
+        if (!(_isSwitchingExercises.value ?: false)) {
+            val report = generateExerciseReport(performanceHistory, frameThreshold, minSequenceLength)
+//            val reportText = buildReportString(report, currentExercise.value ?: "Unknown Exercise")
+//            _exerciseReport.postValue(reportText)
+            _exercisePercentage.postValue(String.format("%.2f",report.overallScore))
+        }
         resetExerciseTracking()
     }
 
@@ -161,22 +178,23 @@ class MainViewModel : ViewModel() {
         lastMatchedIndex = -1
     }
 
-//    private fun buildReportString(report: ExerciseReport): String {
-//        val sb = StringBuilder()
-//        sb.append("Overall Score ${"%.1f".format(report.overallScore)}/100\n")
-//        sb.append("Average Deviation: ${"%.1f".format(report.deviation)}\n")
-//
-//        report.problemSegments.forEach{ segment ->
-//            sb.append("\nFrames ${segment.startIndex}-${segment.endIndex} (Avg Dev: ${"%.1f".format(segment.deviation)}):\n")
-//            segment.problemJoint.forEach{(joint, deviation) ->
-//                sb.append(" - $joint: ${"%.1f".format(deviation)}\n")
-//            }
-//        }
-//        return sb.toString()
-//    }
+    fun resetExerciseState() {
+        _exerciseReport.value = ""
+        _isExerciseCompleted.value = false
+        resetExerciseTracking()
+    }
 
-    private fun buildReportString(report: ExerciseReport): String {
+    fun clearExerciseReport() {
+        _exerciseReport.value = ""
+    }
+
+    fun isExerciseCompleted(): Boolean {
+        return _isExerciseCompleted.value ?: false
+    }
+
+    private fun buildReportString(report: ExerciseReport, currentExercise: String): String {
         val sb = StringBuilder()
+        sb.append(currentExercise, "\n")
         sb.append("Overall Score: ${"%.1f".format(report.overallScore)}/100\n")
         sb.append("Average Deviation: ${"%.1f".format(report.deviation)}\n\n")
 

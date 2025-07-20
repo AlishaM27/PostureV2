@@ -18,6 +18,8 @@ package com.example.postureV2.fragment
 import android.annotation.SuppressLint
 import android.content.res.Configuration
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -63,6 +65,8 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     private var camera: Camera? = null
     private var cameraProvider: ProcessCameraProvider? = null
     private var cameraFacing = CameraSelector.LENS_FACING_BACK
+    private val updateHandler = Handler(Looper.getMainLooper())
+    private lateinit var updateButtonTask: Runnable
 
     /** Blocking ML operations are performed using this executor */
     private lateinit var backgroundExecutor: ExecutorService
@@ -149,8 +153,25 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             )
         }
 
+        fragmentCameraBinding.switchCameraButton.apply {
+            setOnClickListener { switchCamera() }
+            isEnabled = false  // Disable until camera is ready
+        }
+
         // Attach listeners to UI control widgets
         initBottomSheetControls()
+    }
+
+    private fun switchCamera() {
+        // Toggle camera facing direction
+        cameraFacing = if (cameraFacing == CameraSelector.LENS_FACING_BACK) {
+            CameraSelector.LENS_FACING_FRONT
+        } else {
+            CameraSelector.LENS_FACING_BACK
+        }
+
+        // Rebind camera with new facing direction
+        bindCameraUseCases()
     }
 
     private fun initBottomSheetControls() {
@@ -307,6 +328,9 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
                 // Build and bind the camera use cases
                 bindCameraUseCases()
+
+                // Enable switch button after camera is ready
+                fragmentCameraBinding.switchCameraButton.isEnabled = true
             }, ContextCompat.getMainExecutor(requireContext())
         )
     }
@@ -319,8 +343,10 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         val cameraProvider = cameraProvider
             ?: throw IllegalStateException("Camera initialization failed.")
 
-        val cameraSelector =
-            CameraSelector.Builder().requireLensFacing(cameraFacing).build()
+        // Build new camera selector
+        val cameraSelector = CameraSelector.Builder()
+            .requireLensFacing(cameraFacing)
+            .build()
 
         // Preview. Only using the 4:3 ratio because this is the closest to our models
         preview = Preview.Builder().setTargetAspectRatio(AspectRatio.RATIO_4_3)

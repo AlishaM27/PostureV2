@@ -1,7 +1,10 @@
 package com.example.postureV2;
 
 import android.os.Bundle;
-import android.widget.TextView;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
@@ -10,15 +13,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
-import androidx.navigation.ui.NavigationUI;
-
-//import com.example.postureV2.fragment.ResultsFragment;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import android.content.Intent;
+import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
     private MainViewModel viewModel;
-    private TextView resultText;
+//    private TextView resultText;
+    private Spinner exerciseSpinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,58 +30,85 @@ public class MainActivity extends AppCompatActivity {
 
         // Initialize ViewModel
         viewModel = new ViewModelProvider(this).get(MainViewModel.class);
+        exerciseSpinner = findViewById(R.id.posture_exercise);
 
-        //Added by FitHit Developers
+        setupExerciseSpinner();
+        observeViewModel();
+        setupCompleteButton();
+        setupNavigator();
+
         viewModel.setExercise(this, "Jumping Jacks");
+    }
 
-        //button listener
-        findViewById(R.id.btnComplete).setOnClickListener(v -> {
-            viewModel.completeExercise();
+    private void setupExerciseSpinner() {
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
+                this,
+                R.array.exercises_for_posture,
+                android.R.layout.simple_spinner_item
+        );
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        exerciseSpinner.setAdapter(adapter);
+
+        exerciseSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String selectedExercise = parent.getItemAtPosition(position).toString();
+                viewModel.resetExerciseState();
+                viewModel.setExercise(selectedExercise);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // Default to jumping jacks
+                viewModel.setExercise("Jumping Jacks");
+            }
         });
-        //observe exercise report
-//        viewModel.getExerciseReport().observe(this, report -> {
-//            if (report != null && !report.isEmpty()){
-//                showResultsFragment(report);
-//            }
-//        });
+    }
 
-        viewModel.getExerciseReport().observe(this, report ->{
-            if (report != null && !report.isEmpty()){
+    private void observeViewModel() {
+        viewModel.getRestartExercise().observe(this, restart -> {
+            if (restart != null && restart) {
+                restartExerciseExecution();
+            }
+        });
+
+        viewModel.getExerciseReport().observe(this, report-> {
+            if (report !=null && !report.isEmpty()){
                 //Start ResultsActivity with the report
                 Intent intent = new Intent(MainActivity.this, ResultsActivity.class);
                 intent.putExtra("REPORT", report);
                 startActivity(intent);
+
+                //clear report after showing
+                viewModel.clearExerciseReport();
             }
         });
 
-        resultText = findViewById(R.id.poseResultText);
-//        viewModel.getAngleRead().observe(this, newText -> {
-//            //resultText.setText(newText);
-//        });
+        viewModel.getExercisePercentage().observe(this, percentage-> {
+           TextView tvReport = findViewById(R.id.btnComplete);
+           String displayResult = "Score: " + percentage + "%";
+           tvReport.setText(displayResult);
+        });
+    }
 
-        //posture correction section
-//        viewModel.getPostureFeedback().observe(this, feedback -> {
-//            resultText.setText(feedback);
-//        });
-//
-//        viewModel.getExerciseReport().observe(this, report->{
-//            resultText.setText(report);
-//        });
+    private void restartExerciseExecution() {
+        // Get the current exercise from ViewModel
+        String exercise = viewModel.getCurrentExercise().getValue();
+    }
 
+    private void setupCompleteButton(){
+        //button listener
+        findViewById(R.id.btnComplete).setOnClickListener(v -> {
+            viewModel.completeExercise();
+        });
+    }
+    private void setupNavigator(){
         // Get the NavHostFragment and NavController
         NavHostFragment navHostFragment = (NavHostFragment)
                 getSupportFragmentManager().findFragmentById(R.id.fragment_container);
 
         if (navHostFragment != null) {
             NavController navController = navHostFragment.getNavController();
-
-            BottomNavigationView bottomNavigationView = findViewById(R.id.navigation);
-            NavigationUI.setupWithNavController(bottomNavigationView, navController);
-
-            bottomNavigationView.setOnNavigationItemReselectedListener(item -> {
-                // No action
-            });
-
             getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
                 @Override
                 public void handleOnBackPressed() {

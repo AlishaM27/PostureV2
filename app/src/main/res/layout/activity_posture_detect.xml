@@ -56,19 +56,6 @@
                 tools:layout_editor_absoluteY="12dp" />
 
             <ImageButton
-                android:id="@+id/menuButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:backgroundTint="@color/main"
-                android:padding="10dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/icon_menu"
-                app:tint="@color/white"
-                tools:layout_editor_absoluteX="348dp"
-                tools:layout_editor_absoluteY="1dp" />
-
-            <ImageButton
                 android:id="@+id/backButton"
                 android:layout_width="45dp"
                 android:layout_height="wrap_content"
@@ -83,47 +70,25 @@
         </androidx.appcompat.widget.Toolbar>
 
 
-        <com.google.android.material.bottomnavigation.BottomNavigationView
-            android:id="@+id/navigation"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/toolbar"
-            android:padding="0dp"
-            app:itemIconTint="@color/bg_nav_item"
-            app:itemTextColor="@color/bg_nav_item"
-            app:menu="@menu/menu_bottom_nav"
-            tools:layout_margin="0dp" />
-
         <View
             android:id="@+id/poseResults"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:layout_below="@id/navigation"
+            android:layout_below="@+id/toolbar"
+            android:layout_marginTop="2dp"
             android:background="@color/icPressed" />
-
-        <TextView
-            android:id="@+id/poseResultText"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_alignStart="@id/poseResults"
-            android:layout_alignTop="@id/poseResults"
-            android:layout_alignEnd="@id/poseResults"
-            android:layout_alignBottom="@id/poseResults"
-            android:layout_centerInParent="true"
-            android:paddingTop="5dp"
-            android:paddingRight="150dp"
-            android:text="..."
-            android:textAlignment="center" />
 
         <Button
             android:id="@+id/btnComplete"
-            android:layout_width="wrap_content"
+            android:layout_width="180dp"
             android:layout_height="wrap_content"
             android:layout_alignTop="@id/poseResults"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="2dp"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="1dp"
             android:backgroundTint="@color/main"
-            android:text="Complete Exercise" />
+            android:text="Complete Exercise"
+            android:textSize="12sp" />
 
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/fragment_container"
@@ -142,11 +107,12 @@
             android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:layout_alignTop="@id/poseResults"
-            android:layout_alignRight="@id/poseResultText"
-            android:layout_marginTop="0dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="12dp"
+            android:layout_toEndOf="@+id/btnComplete"
+            android:entries="@array/exercises_for_posture"
             android:paddingTop="5dp"
-            android:spinnerMode="dropdown"
-            android:entries="@array/exercises_for_posture" />
+            android:spinnerMode="dropdown" />
 
     </RelativeLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
